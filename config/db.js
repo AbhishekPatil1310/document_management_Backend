@@ -1,6 +1,7 @@
 import "dotenv/config";
+import pkg from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+const { PrismaClient } = pkg;
 
 /*
   Prevent multiple Prisma instances during development
