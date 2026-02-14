@@ -13,18 +13,19 @@ import { sendSecurityAlert } from "../utils/mailer.js";
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME_MS = 15 * 60 * 1000;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isProduction = process.env.NODE_ENV === "production";
 
 const accessCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
   maxAge: 15 * 60 * 1000
 };
 
 const refreshCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000
 };
 
