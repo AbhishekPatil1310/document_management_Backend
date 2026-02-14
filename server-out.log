@@ -1,0 +1,10 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Server running on port 5055
+REQ POST /api/auth/register
+prisma:query INSERT INTO "public"."User" ("id","email","password_hash","created_at","updated_at","storage_used","storage_limit","failed_login_attempts","token_version") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING "public"."User"."id", "public"."User"."email", "public"."User"."password_hash", "public"."User"."created_at", "public"."User"."updated_at", "public"."User"."storage_used", "public"."User"."storage_limit", "public"."User"."failed_login_attempts", "public"."User"."lock_until", "public"."User"."last_security_alert", "public"."User"."token_version", "public"."User"."password_reset_token", "public"."User"."password_reset_expires"
+REQ POST /api/auth/register
+prisma:error 
+Invalid `prisma.user.create()` invocation:
+
+
+Unique constraint failed on the fields: (`email`)
