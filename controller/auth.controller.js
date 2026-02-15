@@ -4,7 +4,7 @@ import db from "../config/db.js";
 import { logAudit } from "../utils/audit.js";
 import { hashPassword, comparePassword } from "../utils/hash.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
-import { sendSecurityAlert } from "../utils/mailer.js";
+import { sendPasswordResetEmail, sendSecurityAlert } from "../utils/mailer.js";
 
 /* ===============================
    CONFIG
@@ -488,9 +488,16 @@ export const revokeSession = async (req, res, next) => {
 export const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
+    const normalizedEmail = email?.trim()?.toLowerCase();
+
+    if (!normalizedEmail || !EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(200).json({
+        message: "If that email exists, a reset link has been sent."
+      });
+    }
 
     const user = await db.user.findUnique({
-      where: { email }
+      where: { email: normalizedEmail }
     });
 
     // Prevent user enumeration
@@ -519,14 +526,10 @@ export const forgotPassword = async (req, res, next) => {
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
 
-    sendSecurityAlert({
+    await sendPasswordResetEmail({
       to: user.email,
-      ip: req.ip,
-      userAgent: "Password Reset Request",
-      time: new Date().toISOString()
+      resetLink
     });
-
-    // You may create a separate reset email function instead of reusing alert.
 
     return res.status(200).json({
       message: "If that email exists, a reset link has been sent."

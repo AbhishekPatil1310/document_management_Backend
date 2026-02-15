@@ -38,3 +38,29 @@ export const sendSecurityAlert = async ({
     console.error("Brevo email error:", error?.response?.body || error);
   }
 };
+
+export const sendPasswordResetEmail = async ({ to, resetLink }) => {
+  try {
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+
+    sendSmtpEmail.subject = "Password Reset Request";
+    sendSmtpEmail.htmlContent = `
+      <h3>Password Reset Request</h3>
+      <p>We received a request to reset your password.</p>
+      <p><a href="${resetLink}">Reset your password</a></p>
+      <p>This link expires in 15 minutes.</p>
+      <p>If you did not request this, you can ignore this email.</p>
+    `;
+
+    sendSmtpEmail.sender = {
+      name: process.env.EMAIL_FROM_NAME,
+      email: process.env.EMAIL_FROM
+    };
+
+    sendSmtpEmail.to = [{ email: to }];
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+  } catch (error) {
+    console.error("Brevo password reset email error:", error?.response?.body || error);
+  }
+};
