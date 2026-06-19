@@ -294,6 +294,64 @@ export const generateDownloadUrl = async (req, res, next) => {
 };
 
 /* ===============================
+   GENERATE SIGNED PREVIEW URL
+================================= */
+
+export const generatePreviewUrl = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Document ID required" });
+    }
+
+    const document = await db.document.findFirst({
+      where: {
+        id,
+        user_id: req.user
+      },
+      select: {
+        storage_key: true,
+        mime_type: true,
+        file_name: true
+      }
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    const isPdf = document.mime_type === "application/pdf";
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET,
+      Key: document.storage_key,
+      ResponseContentType: document.mime_type,
+      // PDFs need inline disposition so the browser renders them instead of downloading
+      ...(isPdf && {
+        ResponseContentDisposition: `inline; filename="${document.file_name}"`
+      })
+    });
+
+    const previewUrl = await getSignedUrl(s3, command, {
+      expiresIn: 300
+    });
+
+    await logAudit({
+      userId: req.user,
+      action: "DOCUMENT_VIEW",
+      documentId: id,
+      req
+    });
+
+    return res.status(200).json({ previewUrl });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* ===============================
    DELETE DOCUMENT
 ================================= */
 
